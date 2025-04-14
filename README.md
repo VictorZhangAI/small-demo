@@ -9,8 +9,8 @@
 -[ ] delete a bunch of students by marking  
 -[ ] student per page & page changing
 -[x] depart database  
--[ ] add a new depart  
--[ ] delete & modify a depart  
+-[x] add a new depart  
+-[x] delete & modify a depart  
 -[ ] staff database  
 -[ ] staff add  
 -[ ] staff delete & modify (with a file transfer)  

@@ -23,4 +23,32 @@ export async function POST(request: Request) {
     console.error('Error adding department:', error);
     return NextResponse.json({ error: 'Failed to add department' }, { status: 500 });
   }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { id, name } = await request.json();
+    const [result] = await pool.query(
+      'UPDATE departments SET name = ? WHERE id = ?',
+      [name, id]
+    );
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error updating department:', error);
+    return NextResponse.json({ error: 'Failed to update department' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { id } = await request.json();
+    const [result] = await pool.query(
+      'DELETE FROM departments WHERE id = ?',
+      [id]
+    );
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    return NextResponse.json({ error: 'Failed to delete department' }, { status: 500 });
+  }
 } 
