@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from 'next/link';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,15 +20,44 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="flex flex-col h-screen">
+          {/* 顶栏 */}
+          <div className="h-16 bg-white border-b flex items-center justify-end px-4">
+            <div className="space-x-4">
+              <button className="px-4 py-2 text-gray-600 hover:text-gray-800">
+                修改密码
+              </button>
+              <button className="px-4 py-2 text-red-600 hover:text-red-800">
+                退出登录
+              </button>
+            </div>
+          </div>
+
+          {/* 主要内容区域 */}
+          <div className="flex flex-1">
+            {/* 左栏 */}
+            <div className="w-64 bg-gray-800 text-white p-4">
+              <div className="space-y-4">
+                <Link href="/" className="block p-2 hover:bg-gray-700 rounded">
+                  返回主页
+                </Link>
+              </div>
+            </div>
+
+            {/* 右侧内容区域 */}
+            <div className="flex-1 p-4">
+              {children}
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   );
