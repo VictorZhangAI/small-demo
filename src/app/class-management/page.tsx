@@ -1,17 +1,26 @@
-import db from '@/lib/db';
+'use client';
 
-async function getClasses() {
-  try {
-    const [rows] = await db.query('SELECT * FROM classes ORDER BY id ASC');
-    return rows;
-  } catch (error) {
-    console.error('Error fetching classes:', error);
-    return [];
-  }
-}
+import { useState, useEffect } from 'react';
+import SearchBar from './SearchBar';
+import AddClassDialog from './AddClassDialog';
 
-export default async function ClassManagement() {
-  const classes = await getClasses();
+export default function ClassManagement() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [classes, setClasses] = useState<any[]>([]);
+
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('/api/classes');
+      const data = await response.json();
+      setClasses(data);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -23,7 +32,17 @@ export default async function ClassManagement() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">班级管理</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">班级管理</h1>
+        <button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+        >
+          添加班级
+        </button>
+      </div>
+      
+      <SearchBar />
       
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200">
@@ -51,6 +70,11 @@ export default async function ClassManagement() {
           </tbody>
         </table>
       </div>
+
+      <AddClassDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+      />
     </div>
   );
 } 

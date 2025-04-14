@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS `classes` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 添加示例数据
-INSERT INTO `classes` (`class_name`, `classroom`, `start_date`, `end_date`, `head_teacher`) VALUES
-('2024第01期01班', 'G102', '2024-03-01', '2024-04-15', '赵敏'),
-('2024第01期02班', 'G102', '2024-03-01', '2024-04-15', '周芷若');
+-- -- 添加示例数据
+-- INSERT INTO `classes` (`class_name`, `classroom`, `start_date`, `end_date`, `head_teacher`) VALUES
+-- ('2024第01期01班', 'G102', '2024-03-01', '2024-04-15', '赵敏'),
+-- ('2024第01期02班', 'G102', '2024-03-01', '2024-04-15', '周芷若');
 
