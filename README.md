@@ -8,7 +8,7 @@
 -[ ] student modifying & searching & disobey  
 -[ ] delete a bunch of students by marking  
 -[ ] student per page & page changing
--[ ] depart database  
+-[x] depart database  
 -[ ] add a new depart  
 -[ ] delete & modify a depart  
 -[ ] staff database  

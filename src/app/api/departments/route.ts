@@ -9,4 +9,18 @@ export async function GET() {
     console.error('Error fetching departments:', error);
     return NextResponse.json({ error: 'Failed to fetch departments' }, { status: 500 });
   }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { name } = await request.json();
+    const [result] = await pool.query(
+      'INSERT INTO departments (name) VALUES (?)',
+      [name]
+    );
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error adding department:', error);
+    return NextResponse.json({ error: 'Failed to add department' }, { status: 500 });
+  }
 } 
