@@ -1,18 +1,18 @@
 ## TODO
 
--[ ] list item per page & page changing  
+-[x] list item per page & page changing  
 -[x] class modifying & deleting
 -[x] student database  
 -[x] student adding  
--[ ] student searching  
--[ ] student modifying & searching & disobey  
--[ ] delete a bunch of students by marking  
--[ ] student per page & page changing
+-[x] student searching  
+-[x] student modifying & searching & disobey  
+-[x] delete a bunch of students by marking  
+-[x] student per page & page changing
 -[x] depart database  
 -[x] add a new depart  
 -[x] delete & modify a depart  
 -[ ] staff database  
--[ ] staff add  
+-[ ] staff add(for work, choose one from the four)  
 -[ ] staff delete & modify (with a file transfer)  
 -[ ] staff delete (a bunch)  
 -[ ] staffs per page
