@@ -1,7 +1,7 @@
 ## TODO
 
 -[ ] list item per page & page changing  
--[ ] class modifying & deleting
+-[x] class modifying & deleting
 -[ ] student database  
 -[ ] student adding  
 -[ ] student searching  

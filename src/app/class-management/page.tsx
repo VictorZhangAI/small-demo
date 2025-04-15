@@ -10,6 +10,8 @@ export default function ClassManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchClasses = async () => {
     try {
@@ -24,6 +26,14 @@ export default function ClassManagement() {
   useEffect(() => {
     fetchClasses();
   }, []);
+
+  // 计算当前页显示的数据
+  const paginatedClasses = classes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(classes.length / itemsPerPage);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -87,7 +97,7 @@ export default function ClassManagement() {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(classes) && classes.map((cls: any) => (
+            {Array.isArray(paginatedClasses) && paginatedClasses.map((cls: any) => (
               <tr key={cls.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 border-b">{cls.id}</td>
                 <td className="px-6 py-4 border-b">{cls.class_name}</td>
@@ -115,6 +125,42 @@ export default function ClassManagement() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex justify-between items-center mt-4">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600">每页显示：</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            className="border rounded px-2 py-1 text-sm"
+          >
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+          </select>
+          <span className="text-sm text-gray-600">条</span>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            上一页
+          </button>
+          <span className="text-sm text-gray-600">
+            第 {currentPage} 页 / 共 {totalPages} 页
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            下一页
+          </button>
+        </div>
       </div>
 
       <AddClassDialog
