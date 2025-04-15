@@ -1,20 +1,54 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AddStudentDialog from './AddStudentDialog';
 import ViolationDialog from './ViolationDialog';
+import EditStudentDialog from './EditStudentDialog';
+import SearchBar from './SearchBar';
 
 export default function StudentManagement() {
   const [students, setStudents] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViolationDialogOpen, setIsViolationDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const searchParams = useSearchParams();
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/students');
+      const studentId = searchParams.get('studentId') || '';
+      const name = searchParams.get('name') || '';
+      const class_name = searchParams.get('class') || '';
+      const educationLevel = searchParams.get('educationLevel') || '';
+
+      let query = 'SELECT * FROM students WHERE 1=1';
+      const params = [];
+
+      if (studentId) {
+        query += ' AND student_id LIKE ?';
+        params.push(`%${studentId}%`);
+      }
+      if (name) {
+        query += ' AND name LIKE ?';
+        params.push(`%${name}%`);
+      }
+      if (class_name) {
+        query += ' AND class LIKE ?';
+        params.push(`%${class_name}%`);
+      }
+      if (educationLevel) {
+        query += ' AND education_level = ?';
+        params.push(educationLevel);
+      }
+
+      const response = await fetch(`/api/students/search?${new URLSearchParams({
+        query,
+        params: JSON.stringify(params)
+      }).toString()}`);
       const data = await response.json();
       setStudents(data);
     } catch (error) {
@@ -24,7 +58,7 @@ export default function StudentManagement() {
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [searchParams]);
 
   // 计算当前页显示的数据
   const paginatedStudents = students.slice(
@@ -42,9 +76,41 @@ export default function StudentManagement() {
     return `${year}-${month}-${day}`;
   };
 
+  const handleEdit = (student: any) => {
+    setSelectedStudent(student);
+    setIsEditDialogOpen(true);
+  };
+
   const handleViolation = (student: any) => {
     setSelectedStudent(student);
     setIsViolationDialogOpen(true);
+  };
+
+  const handleSaveEdit = (updatedStudent: any) => {
+    setStudents(students.map(student => 
+      student.student_id === updatedStudent.student_id ? updatedStudent : student
+    ));
+  };
+
+  const handleDelete = (student: any) => {
+    setSelectedStudent(student);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      const response = await fetch(`/api/students/${selectedStudent.student_id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setStudents(students.filter(student => student.student_id !== selectedStudent.student_id));
+        setIsDeleteDialogOpen(false);
+        setSelectedStudent(null);
+      }
+    } catch (error) {
+      console.error('Error deleting student:', error);
+    }
   };
 
   return (
@@ -58,6 +124,8 @@ export default function StudentManagement() {
           添加学员
         </button>
       </div>
+      
+      <SearchBar />
       
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200">
@@ -90,6 +158,7 @@ export default function StudentManagement() {
                 <td className="px-6 py-4 border-b">
                   <div className="flex space-x-2">
                     <button
+                      onClick={() => handleEdit(student)}
                       className="px-2 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
                     >
                       编辑
@@ -101,6 +170,7 @@ export default function StudentManagement() {
                       违纪
                     </button>
                     <button
+                      onClick={() => handleDelete(student)}
                       className="px-2 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
                     >
                       删除
@@ -155,14 +225,52 @@ export default function StudentManagement() {
       />
 
       {selectedStudent && (
-        <ViolationDialog
-          isOpen={isViolationDialogOpen}
-          onClose={() => {
-            setIsViolationDialogOpen(false);
-            setSelectedStudent(null);
-          }}
-          student={selectedStudent}
-        />
+        <>
+          <EditStudentDialog
+            isOpen={isEditDialogOpen}
+            onClose={() => {
+              setIsEditDialogOpen(false);
+              setSelectedStudent(null);
+            }}
+            student={selectedStudent}
+            onSave={handleSaveEdit}
+          />
+          <ViolationDialog
+            isOpen={isViolationDialogOpen}
+            onClose={() => {
+              setIsViolationDialogOpen(false);
+              setSelectedStudent(null);
+            }}
+            student={selectedStudent}
+          />
+          {isDeleteDialogOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                <h2 className="text-xl font-bold mb-4">确认删除</h2>
+                <p className="mb-4">
+                  确定要删除学员 {selectedStudent.name}（学号：{selectedStudent.student_id}）吗？
+                </p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setIsDeleteDialogOpen(false);
+                      setSelectedStudent(null);
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  >
+                    确认删除
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
