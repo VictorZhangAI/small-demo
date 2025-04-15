@@ -15,7 +15,9 @@ export default function StudentManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViolationDialogOpen, setIsViolationDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBatchDeleteDialogOpen, setIsBatchDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
   const searchParams = useSearchParams();
 
   const fetchStudents = async () => {
@@ -113,16 +115,69 @@ export default function StudentManagement() {
     }
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(paginatedStudents.map(student => student.student_id));
+      setSelectedStudents(allIds);
+    } else {
+      setSelectedStudents(new Set());
+    }
+  };
+
+  const handleSelectStudent = (studentId: string, checked: boolean) => {
+    const newSelected = new Set(selectedStudents);
+    if (checked) {
+      newSelected.add(studentId);
+    } else {
+      newSelected.delete(studentId);
+    }
+    setSelectedStudents(newSelected);
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedStudents.size === 0) return;
+    setIsBatchDeleteDialogOpen(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    try {
+      const response = await fetch('/api/students/batch-delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ studentIds: Array.from(selectedStudents) }),
+      });
+
+      if (response.ok) {
+        setStudents(students.filter(student => !selectedStudents.has(student.student_id)));
+        setSelectedStudents(new Set());
+        setIsBatchDeleteDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error batch deleting students:', error);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">学员管理</h1>
-        <button
-          onClick={() => setIsAddDialogOpen(true)}
-          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-        >
-          添加学员
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleBatchDelete}
+            disabled={selectedStudents.size === 0}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            批量删除
+          </button>
+          <button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          >
+            添加学员
+          </button>
+        </div>
       </div>
       
       <SearchBar />
@@ -131,6 +186,14 @@ export default function StudentManagement() {
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr className="bg-gray-100">
+              <th className="px-6 py-3 border-b text-left">
+                <input
+                  type="checkbox"
+                  checked={selectedStudents.size === paginatedStudents.length}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+              </th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学号</th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">班级</th>
@@ -146,6 +209,14 @@ export default function StudentManagement() {
           <tbody>
             {paginatedStudents.map((student) => (
               <tr key={student.student_id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 border-b">
+                  <input
+                    type="checkbox"
+                    checked={selectedStudents.has(student.student_id)}
+                    onChange={(e) => handleSelectStudent(student.student_id, e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </td>
                 <td className="px-6 py-4 border-b">{student.student_id}</td>
                 <td className="px-6 py-4 border-b">{student.name}</td>
                 <td className="px-6 py-4 border-b">{student.class}</td>
@@ -271,6 +342,33 @@ export default function StudentManagement() {
             </div>
           )}
         </>
+      )}
+
+      {isBatchDeleteDialogOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">确认批量删除</h2>
+            <p className="mb-4">
+              确定要删除选中的 {selectedStudents.size} 名学员吗？
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setIsBatchDeleteDialogOpen(false);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmBatchDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                确认删除
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
