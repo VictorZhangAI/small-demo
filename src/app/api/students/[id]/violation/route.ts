@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function POST(
   request: Request,
@@ -10,7 +10,7 @@ export async function POST(
     const studentId = params.id;
 
     // 更新学生的违纪记录
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       'UPDATE students SET violation_count = violation_count + 1, violation_points = violation_points + ? WHERE student_id = ?',
       [points, studentId]
     );

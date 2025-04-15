@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function PUT(
   request: Request,
@@ -10,7 +10,7 @@ export async function PUT(
     const body = await request.json();
     const { class_name, classroom, start_date, end_date, head_teacher } = body;
 
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       'UPDATE classes SET class_name = ?, classroom = ?, start_date = ?, end_date = ?, head_teacher = ? WHERE id = ?',
       [class_name, classroom, start_date, end_date, head_teacher, id]
     );
@@ -31,7 +31,7 @@ export async function DELETE(
 ) {
   try {
     const id = params.id;
-    const [result] = await db.query('DELETE FROM classes WHERE id = ?', [id]);
+    const [result] = await mysql.query('DELETE FROM classes WHERE id = ?', [id]);
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
     console.error('Error deleting class:', error);

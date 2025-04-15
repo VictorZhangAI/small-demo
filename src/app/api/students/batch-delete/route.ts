@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function DELETE(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function DELETE(request: Request) {
     }
 
     const placeholders = studentIds.map(() => '?').join(',');
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       `DELETE FROM students WHERE student_id IN (${placeholders})`,
       studentIds
     );

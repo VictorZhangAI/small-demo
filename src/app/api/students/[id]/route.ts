@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function PUT(
   request: Request,
@@ -10,7 +10,7 @@ export async function PUT(
     const studentId = params.id;
     const { name, class: class_name, gender, phone, education_level } = data;
 
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       'UPDATE students SET name = ?, class = ?, gender = ?, phone = ?, education_level = ? WHERE student_id = ?',
       [name, class_name, gender, phone, education_level, studentId]
     );
@@ -29,7 +29,7 @@ export async function DELETE(
   try {
     const studentId = params.id;
     
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       'DELETE FROM students WHERE student_id = ?',
       [studentId]
     );

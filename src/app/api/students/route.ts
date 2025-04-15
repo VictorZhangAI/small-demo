@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function GET() {
   try {
-    const [rows] = await db.query('SELECT * FROM students');
+    const [rows] = await mysql.query('SELECT * FROM students');
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching students:', error);
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const { student_id, name, class: class_name, gender, phone, education_level, violation_count, violation_points } = data;
 
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       'INSERT INTO students (student_id, name, class, gender, phone, education_level, violation_count, violation_points) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [student_id, name, class_name, gender, phone, education_level, violation_count, violation_points]
     );

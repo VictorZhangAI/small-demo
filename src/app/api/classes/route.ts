@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function GET(request: Request) {
   try {
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY id ASC';
 
-    const [rows] = await db.query(query, values);
+    const [rows] = await mysql.query(query, values);
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching classes:', error);
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { className, classroom, startDate, endDate, headTeacher } = body;
 
-    const [result] = await db.query(
+    const [result] = await mysql.query(
       'INSERT INTO classes (class_name, classroom, start_date, end_date, head_teacher) VALUES (?, ?, ?, ?, ?)',
       [className, classroom, startDate, endDate, headTeacher]
     );

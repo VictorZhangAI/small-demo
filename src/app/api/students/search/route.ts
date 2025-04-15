@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { mysql } from '@/lib/mysql';
 
 export async function GET(request: Request) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 });
     }
 
-    const [rows] = await db.query(query, params);
+    const [rows] = await mysql.query(query, params);
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Error searching students:', error);
