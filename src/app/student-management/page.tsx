@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import AddStudentDialog from './AddStudentDialog';
+import ViolationDialog from './ViolationDialog';
 
 export default function StudentManagement() {
   const [students, setStudents] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isViolationDialogOpen, setIsViolationDialogOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
   const fetchStudents = async () => {
     try {
@@ -37,6 +40,11 @@ export default function StudentManagement() {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  };
+
+  const handleViolation = (student: any) => {
+    setSelectedStudent(student);
+    setIsViolationDialogOpen(true);
   };
 
   return (
@@ -85,6 +93,12 @@ export default function StudentManagement() {
                       className="px-2 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
                     >
                       编辑
+                    </button>
+                    <button
+                      onClick={() => handleViolation(student)}
+                      className="px-2 py-1 text-sm text-white bg-yellow-500 rounded hover:bg-yellow-600"
+                    >
+                      违纪
                     </button>
                     <button
                       className="px-2 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
@@ -139,6 +153,17 @@ export default function StudentManagement() {
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
       />
+
+      {selectedStudent && (
+        <ViolationDialog
+          isOpen={isViolationDialogOpen}
+          onClose={() => {
+            setIsViolationDialogOpen(false);
+            setSelectedStudent(null);
+          }}
+          student={selectedStudent}
+        />
+      )}
     </div>
   );
 }

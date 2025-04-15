@@ -2,8 +2,8 @@
 
 -[ ] list item per page & page changing  
 -[x] class modifying & deleting
--[ ] student database  
--[ ] student adding  
+-[x] student database  
+-[x] student adding  
 -[ ] student searching  
 -[ ] student modifying & searching & disobey  
 -[ ] delete a bunch of students by marking  
