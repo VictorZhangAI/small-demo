@@ -1,5 +1,7 @@
 import { mysql } from '@/lib/mysql';
 
+export const pool = mysql;
+
 export interface Staff {
   username: string;
   full_name: string;

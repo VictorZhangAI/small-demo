@@ -1,11 +1,57 @@
-import { getStaffList } from '@/lib/db';
+'use client';
 
-export default async function StaffManagement() {
-  const staffList = await getStaffList();
+import { useState, useEffect } from 'react';
+import AddStaffDialog from './AddStaffDialog';
+
+export default function StaffManagement() {
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
+
+  const fetchStaffList = async () => {
+    try {
+      const response = await fetch('/api/staff');
+      if (!response.ok) throw new Error('获取员工列表失败');
+      const data = await response.json();
+      setStaffList(data);
+    } catch (err) {
+      setError('获取员工列表失败，请重试');
+      console.error('获取员工列表失败:', err);
+    }
+  };
+
+  const handleAddStaff = async (newStaff: any) => {
+    await fetchStaffList();
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '无';
+    try {
+      return new Date(dateString).toLocaleString('zh-CN');
+    } catch (err) {
+      return '无效日期';
+    }
+  };
+
+  if (error) {
+    return <div className="p-6 text-red-500">{error}</div>;
+  }
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">员工管理</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">员工管理</h1>
+        <button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          添加员工
+        </button>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
@@ -38,16 +84,22 @@ export default async function StaffManagement() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{staff.gender}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{staff.position}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(staff.hire_date).toLocaleDateString('zh-CN')}
+                  {formatDate(staff.hire_date)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(staff.last_updated).toLocaleString('zh-CN')}
+                  {formatDate(staff.last_updated)}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <AddStaffDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onAdd={handleAddStaff}
+      />
     </div>
   );
 } 
