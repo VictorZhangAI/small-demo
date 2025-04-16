@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import AddStaffDialog from './AddStaffDialog';
+import EditStaffDialog from './EditStaffDialog';
+import DeleteStaffDialog from './DeleteStaffDialog';
 
 export default function StaffManagement() {
   const [staffList, setStaffList] = useState<any[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -26,6 +31,24 @@ export default function StaffManagement() {
 
   const handleAddStaff = async (newStaff: any) => {
     await fetchStaffList();
+  };
+
+  const handleEditStaff = async (updatedStaff: any) => {
+    await fetchStaffList();
+  };
+
+  const handleDeleteStaff = async () => {
+    if (!selectedStaff) return;
+    try {
+      const response = await fetch(`/api/staff/${selectedStaff.username}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('删除员工失败');
+      await fetchStaffList();
+    } catch (err) {
+      setError('删除员工失败，请重试');
+      console.error('删除员工失败:', err);
+    }
   };
 
   const formatDate = (dateString: string | null) => {
@@ -62,6 +85,7 @@ export default function StaffManagement() {
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">职位</th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">入职日期</th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最后更新时间</th>
+              <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -89,6 +113,28 @@ export default function StaffManagement() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatDate(staff.last_updated)}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => {
+                        setSelectedStaff(staff);
+                        setIsEditDialogOpen(true);
+                      }}
+                      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      编辑
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedStaff(staff);
+                        setIsDeleteDialogOpen(true);
+                      }}
+                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      删除
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -99,6 +145,20 @@ export default function StaffManagement() {
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddStaff}
+      />
+
+      <EditStaffDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onEdit={handleEditStaff}
+        staff={selectedStaff}
+      />
+
+      <DeleteStaffDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onDelete={handleDeleteStaff}
+        staff={selectedStaff}
       />
     </div>
   );
