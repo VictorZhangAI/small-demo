@@ -23,8 +23,13 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // 存储JWT令牌
+        // 存储JWT令牌和用户名
         localStorage.setItem('token', data.token);
+        localStorage.setItem('username', username);
+        
+        // 触发登录状态变化事件
+        window.dispatchEvent(new Event('loginStateChange'));
+        
         // 跳转到仪表板页面
         router.push('/dashboard');
       } else {

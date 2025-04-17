@@ -3,17 +3,61 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import ChangePasswordDialog from './ChangePasswordDialog';
 
 export default function Navigation({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    // 检查是否已登录
+  // 检查登录状态的函数
+  const checkLoginStatus = () => {
     const token = localStorage.getItem('token');
+    const storedUsername = localStorage.getItem('username');
+    console.log('Navigation - Stored username:', storedUsername);
     setIsLoggedIn(!!token);
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  };
+
+  useEffect(() => {
+    // 初始检查登录状态
+    checkLoginStatus();
+
+    // 添加storage事件监听器
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token' || e.key === 'username') {
+        checkLoginStatus();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // 清理函数
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
+
+  // 添加自定义事件监听器
+  useEffect(() => {
+    const handleLoginStateChange = () => {
+      checkLoginStatus();
+    };
+
+    window.addEventListener('loginStateChange', handleLoginStateChange);
+
+    return () => {
+      window.removeEventListener('loginStateChange', handleLoginStateChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('Navigation - Current username state:', username);
+  }, [username]);
 
   const handleNavClick = (e: React.MouseEvent, path: string) => {
     if (!isLoggedIn) {
@@ -21,6 +65,15 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
       alert('请先登录后再访问此功能');
       router.push('/login');
       return;
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('确定要退出登录吗？')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      setIsLoggedIn(false);
+      router.push('/login');
     }
   };
 
@@ -33,19 +86,26 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex flex-col h-screen">
       {/* 顶栏 */}
-      <div className="h-16 bg-white border-b flex items-center justify-end px-4">
+      <div className="h-16 bg-white border-b flex items-center justify-between px-4">
+        {isLoggedIn && (
+          <div className="text-gray-600">
+            欢迎，{username}
+          </div>
+        )}
         <div className="space-x-4">
           {isLoggedIn ? (
             <>
-              <button className="px-4 py-2 text-gray-600 hover:text-gray-800">
+              <button 
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                onClick={() => {
+                  console.log('Opening change password dialog with username:', username);
+                  setIsChangePasswordOpen(true);
+                }}
+              >
                 修改密码
               </button>
               <button 
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  setIsLoggedIn(false);
-                  router.push('/login');
-                }}
+                onClick={handleLogout}
                 className="px-4 py-2 text-red-600 hover:text-red-800"
               >
                 退出登录
@@ -117,6 +177,13 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
           {children}
         </div>
       </div>
+
+      {/* 修改密码对话框 */}
+      <ChangePasswordDialog
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        username={username}
+      />
     </div>
   );
 } 

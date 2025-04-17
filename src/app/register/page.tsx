@@ -10,16 +10,24 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
     if (password !== confirmPassword) {
       setError('两次输入的密码不一致');
       return;
     }
 
+    if (password.length < 6) {
+      setError('密码长度不能少于6个字符');
+      return;
+    }
+
     try {
+      setIsLoading(true);
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -28,15 +36,19 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         // 注册成功，跳转到登录页
         router.push('/login');
       } else {
-        const data = await response.json();
         setError(data.message || '注册失败');
       }
     } catch (err) {
-      setError('注册过程中发生错误');
+      console.error('Registration error:', err);
+      setError('注册过程中发生错误，请稍后重试');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,6 +70,7 @@ export default function RegisterPage() {
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -68,6 +81,8 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
+              disabled={isLoading}
+              minLength={6}
             />
           </div>
           <div>
@@ -78,13 +93,18 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
+              disabled={isLoading}
+              minLength={6}
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className={`w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={isLoading}
           >
-            注册
+            {isLoading ? '注册中...' : '注册'}
           </button>
         </form>
         <div className="mt-4 text-center">
