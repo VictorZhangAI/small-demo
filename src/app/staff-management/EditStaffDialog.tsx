@@ -29,13 +29,12 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
   const [formData, setFormData] = useState({
     username: '',
     full_name: '',
-    gender: '',
-    position: '',
+    gender: '男',
+    position: '班主任',
     hire_date: '',
     department: '',
     photo: null as File | null,
   });
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -45,9 +44,9 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
       setFormData({
         username: staff.username || '',
         full_name: staff.full_name || '',
-        gender: staff.gender || '',
-        position: staff.position || '',
-        hire_date: staff.hire_date || '',
+        gender: staff.gender || '男',
+        position: staff.position || '班主任',
+        hire_date: staff.hire_date || new Date().toISOString().split('T')[0],
         department: staff.department || '',
         photo: null,
       });
@@ -59,7 +58,6 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
       const response = await fetch('/api/departments');
       if (!response.ok) throw new Error('获取部门列表失败');
       const data = await response.json();
-      console.log('获取到的部门数据:', data);
       setDepartments(data);
     } catch (err) {
       console.error('获取部门列表失败:', err);
@@ -68,27 +66,7 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-
-    // 验证必填字段
-    if (!formData.username || !formData.full_name || !formData.hire_date || !formData.department) {
-      setError('请填写所有必填字段');
-      return;
-    }
-
-    // 验证照片
-    if (formData.photo) {
-      if (formData.photo.size > 2 * 1024 * 1024 * 1024) {
-        setError('照片大小不能超过2GB');
-        return;
-      }
-      const fileType = formData.photo.type;
-      if (!['image/jpeg', 'image/jpg', 'image/png'].includes(fileType)) {
-        setError('照片格式必须是jpg、jpeg或png');
-        return;
-      }
-    }
-
+    
     try {
       const formDataToSend = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
@@ -102,16 +80,17 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
         body: formDataToSend,
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '更新员工信息失败');
+        console.error('更新失败:', data.error);
+        return;
       }
 
-      onEdit(await response.json());
+      onEdit(data);
       onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '更新员工信息失败，请重试');
-      console.error('更新员工信息失败:', err);
+    } catch (error) {
+      console.error('Error updating staff:', error);
     }
   };
 
@@ -121,7 +100,6 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">编辑员工信息</h2>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">用户名</label>
@@ -151,20 +129,23 @@ export default function EditStaffDialog({ isOpen, onClose, onEdit, staff }: Edit
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
-              <option value="">请选择</option>
               <option value="男">男</option>
               <option value="女">女</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">职位</label>
-            <input
-              type="text"
+            <select
               value={formData.position}
               onChange={(e) => setFormData({ ...formData, position: e.target.value })}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
-            />
+            >
+              <option value="班主任">班主任</option>
+              <option value="讲师">讲师</option>
+              <option value="学工主管">学工主管</option>
+              <option value="教研主管">教研主管</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">入职日期</label>

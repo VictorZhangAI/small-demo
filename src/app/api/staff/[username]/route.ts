@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { pool } from '@/lib/db';
 
 export async function PUT(
   request: Request,
   { params }: { params: { username: string } }
 ) {
   try {
+    // 确保 params 是有效的
+    if (!params?.username) {
+      return NextResponse.json(
+        { error: '用户名参数缺失' },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const username = params.username;
     const full_name = formData.get('full_name') as string;
@@ -31,25 +39,29 @@ export async function PUT(
     }
 
     // 更新员工信息
-    const result = await db.query(
+    const [result] = await pool.query(
       `UPDATE staff 
-       SET full_name = $1, gender = $2, position = $3, 
-           hire_date = $4, department = $5, photo = $6,
-           last_updated = CURRENT_TIMESTAMP
-       WHERE username = $7
-       RETURNING *`,
+       SET full_name = ?, gender = ?, position = ?, 
+           hire_date = ?, department = ?, photo = ?
+       WHERE username = ?`,
       [full_name, gender, position, hire_date, department, photoBuffer, username]
     );
 
-    if (result.rows.length === 0) {
+    if (!result || (result as any).affectedRows === 0) {
       return NextResponse.json(
         { error: '员工不存在' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(result.rows[0]);
-  } catch (error) {
+    // 获取更新后的员工信息
+    const [rows] = await pool.query(
+      'SELECT * FROM staff WHERE username = ?',
+      [username]
+    ) as [any[], any];
+
+    return NextResponse.json(rows[0]);
+  } catch (error: any) {
     console.error('更新员工信息失败:', error);
     return NextResponse.json(
       { error: '更新员工信息失败' },
@@ -63,22 +75,30 @@ export async function DELETE(
   { params }: { params: { username: string } }
 ) {
   try {
+    // 确保 params 是有效的
+    if (!params?.username) {
+      return NextResponse.json(
+        { error: '用户名参数缺失' },
+        { status: 400 }
+      );
+    }
+
     const username = params.username;
 
-    const result = await db.query(
-      'DELETE FROM staff WHERE username = $1 RETURNING *',
+    const [result] = await pool.query(
+      'DELETE FROM staff WHERE username = ?',
       [username]
     );
 
-    if (result.rows.length === 0) {
+    if (!result || (result as any).affectedRows === 0) {
       return NextResponse.json(
         { error: '员工不存在' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ message: '删除成功' });
-  } catch (error) {
+    return NextResponse.json({ message: '员工删除成功' });
+  } catch (error: any) {
     console.error('删除员工失败:', error);
     return NextResponse.json(
       { error: '删除员工失败' },
