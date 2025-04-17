@@ -43,11 +43,26 @@ export default function RootLayout({
 
           {/* 主要内容区域 */}
           <div className="flex flex-1">
-            {/* 左栏 */}
+            {/* 左栏导航 */}
             <div className="w-64 bg-gray-800 text-white p-4">
               <div className="space-y-4">
-                <Link href="/" className="block p-2 hover:bg-gray-700 rounded">
+                <Link href="/dashboard" className="block p-2 hover:bg-gray-700 rounded">
                   返回主页
+                </Link>
+                <Link href="/class-management" className="block p-2 hover:bg-gray-700 rounded">
+                  班级管理
+                </Link>
+                <Link href="/student-management" className="block p-2 hover:bg-gray-700 rounded">
+                  学员管理
+                </Link>
+                <Link href="/department-management" className="block p-2 hover:bg-gray-700 rounded">
+                  部门管理
+                </Link>
+                <Link href="/staff-management" className="block p-2 hover:bg-gray-700 rounded">
+                  员工管理
+                </Link>
+                <Link href="/staff-statistics" className="block p-2 hover:bg-gray-700 rounded">
+                  员工信息统计
                 </Link>
               </div>
             </div>
