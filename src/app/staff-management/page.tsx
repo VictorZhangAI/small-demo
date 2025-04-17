@@ -12,6 +12,7 @@ export default function StaffManagement() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [error, setError] = useState('');
+  const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchStaffList();
@@ -23,6 +24,7 @@ export default function StaffManagement() {
       if (!response.ok) throw new Error('获取员工列表失败');
       const data = await response.json();
       setStaffList(data);
+      setSelectedStaffIds([]); // 重置选择
     } catch (err) {
       setError('获取员工列表失败，请重试');
       console.error('获取员工列表失败:', err);
@@ -51,6 +53,48 @@ export default function StaffManagement() {
     }
   };
 
+  const handleBatchDelete = async () => {
+    if (selectedStaffIds.length === 0) return;
+    
+    try {
+      const results = await Promise.all(
+        selectedStaffIds.map(username =>
+          fetch(`/api/staff/${username}`, {
+            method: 'DELETE',
+          })
+        )
+      );
+
+      const hasError = results.some(response => !response.ok);
+      if (hasError) {
+        throw new Error('部分员工删除失败');
+      }
+
+      await fetchStaffList();
+    } catch (err) {
+      setError('批量删除失败，请重试');
+      console.error('批量删除失败:', err);
+    }
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedStaffIds(staffList.map(staff => staff.username));
+    } else {
+      setSelectedStaffIds([]);
+    }
+  };
+
+  const handleSelectStaff = (username: string) => {
+    setSelectedStaffIds(prev => {
+      if (prev.includes(username)) {
+        return prev.filter(id => id !== username);
+      } else {
+        return [...prev, username];
+      }
+    });
+  };
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '无';
     try {
@@ -68,17 +112,35 @@ export default function StaffManagement() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">员工管理</h1>
-        <button
-          onClick={() => setIsAddDialogOpen(true)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          添加员工
-        </button>
+        <div className="space-x-2">
+          {selectedStaffIds.length > 0 && (
+            <button
+              onClick={handleBatchDelete}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+            >
+              批量删除 ({selectedStaffIds.length})
+            </button>
+          )}
+          <button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            添加员工
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr className="bg-gray-50">
+              <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <input
+                  type="checkbox"
+                  checked={selectedStaffIds.length === staffList.length}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+              </th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">照片</th>
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">性别</th>
@@ -88,9 +150,17 @@ export default function StaffManagement() {
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody>
             {staffList.map((staff) => (
               <tr key={staff.username} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={selectedStaffIds.includes(staff.username)}
+                    onChange={() => handleSelectStaff(staff.username)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{staff.full_name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {staff.photo ? (
@@ -113,7 +183,7 @@ export default function StaffManagement() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatDate(staff.last_updated)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex space-x-2">
                     <button
                       onClick={() => {
