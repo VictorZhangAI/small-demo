@@ -16,7 +16,7 @@
 -[x] staff delete & modify (with a file transfer)  
 -[x] staff delete (a bunch)  
 -[x] staffs per page
--[ ] statistics: a pie for sex, a bar for work  
+-[x] statistics: a pie for sex, a bar for work  
 -[ ] login page with jwt  
 -[ ] register page  
 -[ ] change password  
