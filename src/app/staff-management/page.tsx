@@ -13,6 +13,8 @@ export default function StaffManagement() {
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [error, setError] = useState('');
   const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchStaffList();
@@ -30,6 +32,14 @@ export default function StaffManagement() {
       console.error('获取员工列表失败:', err);
     }
   };
+
+  // 计算当前页显示的数据
+  const paginatedStaffList = staffList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(staffList.length / itemsPerPage);
 
   const handleAddStaff = async (newStaff: any) => {
     await fetchStaffList();
@@ -79,7 +89,7 @@ export default function StaffManagement() {
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedStaffIds(staffList.map(staff => staff.username));
+      setSelectedStaffIds(paginatedStaffList.map(staff => staff.username));
     } else {
       setSelectedStaffIds([]);
     }
@@ -136,7 +146,7 @@ export default function StaffManagement() {
               <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 <input
                   type="checkbox"
-                  checked={selectedStaffIds.length === staffList.length}
+                  checked={selectedStaffIds.length === paginatedStaffList.length}
                   onChange={handleSelectAll}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
@@ -151,7 +161,7 @@ export default function StaffManagement() {
             </tr>
           </thead>
           <tbody>
-            {staffList.map((staff) => (
+            {paginatedStaffList.map((staff) => (
               <tr key={staff.username} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
@@ -209,6 +219,45 @@ export default function StaffManagement() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-4 flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600">每页显示：</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1); // 重置到第一页
+            }}
+            className="border rounded px-2 py-1 text-sm"
+          >
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+          <span className="text-sm text-gray-600">条</span>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            上一页
+          </button>
+          <span className="text-sm text-gray-600">
+            第 {currentPage} 页 / 共 {totalPages} 页
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            下一页
+          </button>
+        </div>
       </div>
 
       <AddStaffDialog

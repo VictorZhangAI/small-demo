@@ -11,11 +11,11 @@
 -[x] depart database  
 -[x] add a new depart  
 -[x] delete & modify a depart  
--[ ] staff database  
--[ ] staff add(for work, choose one from the four)  
--[ ] staff delete & modify (with a file transfer)  
--[ ] staff delete (a bunch)  
--[ ] staffs per page
+-[x] staff database  
+-[x] staff add(for work, choose one from the four)  
+-[x] staff delete & modify (with a file transfer)  
+-[x] staff delete (a bunch)  
+-[x] staffs per page
 -[ ] statistics: a pie for sex, a bar for work  
 -[ ] login page with jwt  
 -[ ] register page  
