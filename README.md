@@ -1,3 +1,7 @@
+# SMALL_DEMO
+
+A school management system implemented in Next.js  
+
 ## TODO
 
 -[x] list item per page & page changing  
@@ -17,7 +21,16 @@
 -[x] staff delete (a bunch)  
 -[x] staffs per page
 -[x] statistics: a pie for sex, a bar for work  
--[ ] login page with jwt  
--[ ] register page  
--[ ] change password  
--[ ] exit the system  
+-[x] login page with jwt  
+-[x] register page  
+-[x] change password  
+-[x] exit the system  
+
+Problems still remained:  
+- the login page doesn't feature a stop when a subdomain is entered  
+- the page fail to suit when it is enlarged to 200% size
+- the pictures is stored in the database without back displaying
+- all management pages are lack of trim and filter
+- lack of co-using data between management blocks
+
+If you want to use this repo for your web lab, just feel free, but be careful about <b> ACADEMIC INTEGRITY! </b>  
